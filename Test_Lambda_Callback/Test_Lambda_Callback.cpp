@@ -1,7 +1,7 @@
 ﻿// Test_Lamda_Callback.cpp : Defines the entry point for the application.
 //
 
-#include "Test_Lamda_Callback.h"
+#include "Test_Lambda_Callback.h"
 
 std::vector<XPLMFlightLoopID> flightloops;
 std::vector<std::unique_ptr<Topic>> topics;

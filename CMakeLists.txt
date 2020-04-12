@@ -3,7 +3,7 @@
 #
 cmake_minimum_required (VERSION 3.8)
 
-project ("Test_Lamda_Callback")
+project ("Test_Lambda_Callback")
 
 # Include sub-projects.
-add_subdirectory ("Test_Lamda_Callback")
+add_subdirectory ("Test_Lambda_Callback")
