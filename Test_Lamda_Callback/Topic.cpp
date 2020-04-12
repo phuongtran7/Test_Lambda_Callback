@@ -123,7 +123,8 @@ Topic::Topic(std::string address, std::string topic, TopicType type, YAML::Node&
 	client_{ nullptr },
 	type_(type),
 	config_(config),
-	dataref_list_{}
+	dataref_list_{},
+	flexbuffers_builder_{ nullptr }
 {
 	// Prepair datarefs
 	read_config();
@@ -150,6 +151,7 @@ Topic::~Topic()
 	client_.reset();
 	buffer_.reset();
 	dataref_list_.clear();
+	flexbuffers_builder_.reset();
 }
 
 void Topic::Update()
