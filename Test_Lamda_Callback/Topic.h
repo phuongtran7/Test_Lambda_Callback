@@ -100,7 +100,7 @@ private:
 	}
 
 public:
-	Topic(std::string address, std::string topic, TopicType type, YAML::Node& config);
+	Topic(const std::string& address, const std::string& topic, TopicType type, YAML::Node& config);
 	~Topic();
 
 	// Copy constructor

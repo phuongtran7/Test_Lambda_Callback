@@ -118,7 +118,7 @@ void Topic::read_data()
 }
 
 
-Topic::Topic(std::string address, std::string topic, TopicType type, YAML::Node& config) :
+Topic::Topic(const std::string& address, const std::string& topic, TopicType type, YAML::Node& config) :
 	buffer_{ nullptr },
 	client_{ nullptr },
 	type_(type),
