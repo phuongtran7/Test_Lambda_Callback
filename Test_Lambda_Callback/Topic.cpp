@@ -1,5 +1,27 @@
 #include "Topic.h"
 
+void Topic::init()
+{
+	// Prepare datarefs
+	read_config();
+
+	switch (type_)
+	{
+	case TopicType::PUBLISHER: {
+		flexbuffers_builder_ = std::make_unique<flexbuffers::Builder>();
+		client_ = std::make_unique<MQTT_Client>(address_, topic_, 0);
+		break;
+	}
+	case TopicType::SUBSCRIBER: {
+		buffer_ = std::make_shared<synchronized_value<std::string>>();
+		client_ = std::make_unique<MQTT_Client>(address_, topic_, 0, buffer_);
+		break;
+	}
+	default:
+		break;
+	}
+}
+
 void Topic::read_config()
 {
 	// Each of dataref in the list is a map with value is a array of nested key-value pairs
@@ -118,6 +140,8 @@ void Topic::read_data()
 
 
 Topic::Topic(const std::string& address, const std::string& topic, TopicType type, YAML::Node& config) :
+	address_(address),
+	topic_(topic),
 	buffer_{ nullptr },
 	client_{ nullptr },
 	type_(type),
@@ -125,24 +149,7 @@ Topic::Topic(const std::string& address, const std::string& topic, TopicType typ
 	dataref_list_{},
 	flexbuffers_builder_{ nullptr }
 {
-	// Prepare datarefs
-	read_config();
-
-	switch (type_)
-	{
-	case TopicType::PUBLISHER: {
-		flexbuffers_builder_ = std::make_unique<flexbuffers::Builder>();
-		client_ = std::make_unique<MQTT_Client>(address, topic, 0);
-		break;
-	}
-	case TopicType::SUBSCRIBER: {
-		buffer_ = std::make_shared<synchronized_value<std::string>>();
-		client_ = std::make_unique<MQTT_Client>(address, topic, 0, buffer_);
-		break;
-	}
-	default:
-		break;
-	}
+	init();
 }
 
 Topic::~Topic()
@@ -151,6 +158,31 @@ Topic::~Topic()
 	buffer_.reset();
 	dataref_list_.clear();
 	flexbuffers_builder_.reset();
+}
+
+Topic::Topic(Topic&& other) noexcept :
+	address_(std::exchange(other.address_, {})),
+	topic_(std::exchange(other.topic_, {})),
+	buffer_{ nullptr },
+	client_{ nullptr },
+	type_(std::exchange(other.type_, {})),
+	config_(std::exchange(other.config_, {})),
+	dataref_list_{},
+	flexbuffers_builder_{ nullptr }
+{
+}
+
+Topic& Topic::operator=(Topic&& other) noexcept
+{
+	std::swap(address_, other.address_);
+	std::swap(topic_, other.topic_);
+	std::swap(buffer_, other.buffer_);
+	std::swap(client_, other.client_);
+	std::swap(type_, other.type_);
+	std::swap(config_, other.config_);
+	std::swap(dataref_list_, other.dataref_list_);
+	std::swap(flexbuffers_builder_, other.flexbuffers_builder_);
+	return *this;
 }
 
 void Topic::Update()

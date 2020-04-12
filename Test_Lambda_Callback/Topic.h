@@ -7,6 +7,8 @@
 #include "flatbuffers/flexbuffers.h"
 
 class Topic {
+	std::string address_;
+	std::string topic_;
 	std::shared_ptr<synchronized_value<std::string>> buffer_;
 	std::unique_ptr<MQTT_Client> client_;
 	TopicType type_;
@@ -15,6 +17,7 @@ class Topic {
 	std::unique_ptr<flexbuffers::Builder> flexbuffers_builder_;
 
 private:
+	void init();
 	void read_config();
 	void send_data();
 	void read_data();

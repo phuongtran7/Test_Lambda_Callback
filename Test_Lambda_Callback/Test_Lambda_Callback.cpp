@@ -28,7 +28,7 @@ void read_initial_config() {
 		for (auto&& item : sub) {
 			auto current_topic = item.as<std::string>();
 			auto node = config[current_topic].as<YAML::Node>();
-			auto temp_topic = std::make_unique<Topic>(address, current_topic, TopicType::PUBLISHER, node);
+			auto temp_topic = std::make_unique<Topic>(address, current_topic, TopicType::SUBSCRIBER, node);
 			topics.push_back(std::move(temp_topic));
 		}
 	}
@@ -67,6 +67,11 @@ PLUGIN_API void XPluginDisable(void)
 
 PLUGIN_API int XPluginEnable(void)
 {
+	if (topics.empty()) {
+		// Don't enable the plugin if there isn't any topic
+		return 0;
+	}
+
 	// Register flight loop for writing the data
 	XPLMCreateFlightLoop_t data_params{ sizeof(XPLMCreateFlightLoop_t), xplm_FlightLoop_Phase_AfterFlightModel,
 		[] (float inElapsedSinceLastCall,
