@@ -10,7 +10,6 @@ void Topic::read_config()
 		// Unfortunately, it seems that we don't have a simple way to get the map name
 		// So instead of iterate over all the map keys, this will grab the first key
 		// which guaranteed as the map name in our config.
-		//fmt::print("    Name: {}\n", data.begin()->first.as<std::string>());
 		dataref.name = data.begin()->first.as<std::string>();
 
 		auto node_value = data.begin()->second.as<YAML::Node>();
@@ -126,7 +125,7 @@ Topic::Topic(const std::string& address, const std::string& topic, TopicType typ
 	dataref_list_{},
 	flexbuffers_builder_{ nullptr }
 {
-	// Prepair datarefs
+	// Prepare datarefs
 	read_config();
 
 	switch (type_)

@@ -11,8 +11,6 @@ find_package(fmt CONFIG REQUIRED)
 find_package(PahoMqttCpp CONFIG REQUIRED)
 find_package(yaml-cpp CONFIG REQUIRED)
 
-# Due to the fact that the lib file doesn't comfort to the standard naming convention
-# So we have to find and link with absolute path
 find_library(XP_LIBRARY XPLM_64)
 
 target_link_libraries(Test_Lamda_Callback PRIVATE 
