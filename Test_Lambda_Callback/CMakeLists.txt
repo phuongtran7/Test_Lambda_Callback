@@ -10,6 +10,7 @@ set_target_properties(Test_Lambda_Callback PROPERTIES SUFFIX ".xpl")
 find_package(fmt CONFIG REQUIRED)
 find_package(PahoMqttCpp CONFIG REQUIRED)
 find_package(yaml-cpp CONFIG REQUIRED)
+find_package(Flatbuffers CONFIG REQUIRED)
 
 find_library(XP_LIBRARY XPLM_64)
 
@@ -17,4 +18,5 @@ target_link_libraries(Test_Lambda_Callback PRIVATE
 		fmt::fmt fmt::fmt-header-only
 		PahoMqttCpp::paho-mqttpp3
 		yaml-cpp
+		flatbuffers::flatbuffers
 		${XP_LIBRARY})
