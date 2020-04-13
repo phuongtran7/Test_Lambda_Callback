@@ -170,7 +170,7 @@ Topic::Topic(Topic&& other) noexcept :
 	dataref_list_(std::move(other.dataref_list_)),
 	flexbuffers_builder_(std::move(other.flexbuffers_builder_))
 {
-	init();
+	// Don't need to call init() again as we already moved resources from other.
 }
 
 Topic& Topic::operator=(Topic&& other) noexcept
