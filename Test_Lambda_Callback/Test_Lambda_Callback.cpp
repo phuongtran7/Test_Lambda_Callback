@@ -4,7 +4,7 @@
 #include "Test_Lambda_Callback.h"
 
 std::vector<XPLMFlightLoopID> flightloops;
-std::vector<std::unique_ptr<Topic>> topics;
+std::vector<Topic> topics;
 
 void read_initial_config() {
 	YAML::Node config = YAML::LoadFile("G:/X-Plane/X-Plane 11/Aircraft/Laminar Research/Stinson L5/plugins/Test_Lambda/Config.yaml");
@@ -17,8 +17,7 @@ void read_initial_config() {
 		for (auto&& item : pub) {
 			auto current_topic = item.as<std::string>();
 			auto node = config[current_topic].as<YAML::Node>();
-			auto temp_topic = std::make_unique<Topic>(address, current_topic, TopicType::PUBLISHER, node);
-			topics.push_back(std::move(temp_topic));
+			topics.emplace_back(Topic(address, current_topic, TopicType::PUBLISHER, node));
 		}
 	}
 	
@@ -28,8 +27,7 @@ void read_initial_config() {
 		for (auto&& item : sub) {
 			auto current_topic = item.as<std::string>();
 			auto node = config[current_topic].as<YAML::Node>();
-			auto temp_topic = std::make_unique<Topic>(address, current_topic, TopicType::SUBSCRIBER, node);
-			topics.push_back(std::move(temp_topic));
+			topics.emplace_back(Topic(address, current_topic, TopicType::SUBSCRIBER, node));
 		}
 	}
 }
@@ -56,9 +54,7 @@ PLUGIN_API void	XPluginStop(void) {}
 
 PLUGIN_API void XPluginDisable(void)
 {
-	for (auto&& topic : topics) {
-		topic.reset();
-	}
+	topics.clear();
 
 	for (auto&& id : flightloops) {
 		XPLMDestroyFlightLoop(id);
@@ -72,34 +68,35 @@ PLUGIN_API int XPluginEnable(void)
 		return 0;
 	}
 
-	// Register flight loop for writing the data
-	XPLMCreateFlightLoop_t data_params{ sizeof(XPLMCreateFlightLoop_t), xplm_FlightLoop_Phase_AfterFlightModel,
-		[] (float inElapsedSinceLastCall,
-			float inElapsedTimeSinceLastFlightLoop,
-			int inCounter,
-			void* inRefcon) -> float
-		{
-			auto topic_vector = reinterpret_cast<std::vector<std::unique_ptr<Topic>>*>(inRefcon);
-			if (topic_vector) {
-				for (auto&& item : *topic_vector) {
-					item->Update();
+	// Register flight loop for each of the topic
+	for (auto&& topic : topics) {
+		XPLMCreateFlightLoop_t data_params{ sizeof(XPLMCreateFlightLoop_t), xplm_FlightLoop_Phase_AfterFlightModel,
+			[](float inElapsedSinceLastCall,
+				float inElapsedTimeSinceLastFlightLoop,
+				int inCounter,
+				void* inRefcon) -> float
+			{
+				auto topic = static_cast<Topic*>(inRefcon);
+
+				if (topic) {
+					topic->Update();
 				}
+				return -1.0;
 			}
-			return -1.0;
+		, &topic };
+
+		auto id = XPLMCreateFlightLoop(&data_params);
+		if (id == nullptr)
+		{
+			XPLMDebugString("Cannot create flight loop. Exiting.\n");
+			return 0;
 		}
-	, &topics };
+		else {
+			XPLMScheduleFlightLoop(id, -1.0f, true);
+		}
 
-	auto id = XPLMCreateFlightLoop(&data_params);
-	if (id == nullptr)
-	{
-		XPLMDebugString("Cannot create flight loop. Exiting.\n");
-		return 0;
+		flightloops.push_back(std::move(id));
 	}
-	else {
-		XPLMScheduleFlightLoop(id, -1.0f, true);
-	}
-
-	flightloops.push_back(std::move(id));
 
 	return 1;
 }

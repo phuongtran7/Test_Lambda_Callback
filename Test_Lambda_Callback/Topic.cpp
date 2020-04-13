@@ -59,7 +59,7 @@ void Topic::read_config()
 			dataref.num_value = data["num_value"].as<int>();
 		}
 
-		dataref_list_.push_back(std::move(dataref));
+		dataref_list_.emplace_back(std::move(dataref));
 	}
 }
 
@@ -161,15 +161,16 @@ Topic::~Topic()
 }
 
 Topic::Topic(Topic&& other) noexcept :
-	address_(std::exchange(other.address_, {})),
-	topic_(std::exchange(other.topic_, {})),
-	buffer_{ nullptr },
-	client_{ nullptr },
-	type_(std::exchange(other.type_, {})),
-	config_(std::exchange(other.config_, {})),
-	dataref_list_{},
-	flexbuffers_builder_{ nullptr }
+	address_(std::move(other.address_)),
+	topic_(std::move(other.topic_)),
+	buffer_(std::move(other.buffer_)),
+	client_(std::move(other.client_)),
+	type_(std::move(other.type_)),
+	config_(std::move(other.config_)),
+	dataref_list_(std::move(other.dataref_list_)),
+	flexbuffers_builder_(std::move(other.flexbuffers_builder_))
 {
+	init();
 }
 
 Topic& Topic::operator=(Topic&& other) noexcept
